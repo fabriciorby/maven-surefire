@@ -19,40 +19,30 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.util.List;
-
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.plugin.surefire.log.api.Level;
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
+
+import java.util.List;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 
 /**
- * Base class for console reporters.
+ * Custom class for console reporters.
  *
- * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @author Kristian Rosenvold
+ * @author <a href="mailto:fabriciorby@hotmail.com">Fabrício Yamamoto</a>
  */
-public class ConsoleReporter
-        extends StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
+public class ConsoleReporterCustom extends ConsoleReporter
 {
-    public static final String BRIEF = "brief";
-    public static final String PLAIN = "plain";
-    private static final String TEST_SET_STARTING_PREFIX = "Running ";
+    private static final String TEST_SET_STARTING_PREFIX = "RODANDO ";
 
-    protected final boolean usePhrasedClassNameInRunning;
-    protected final boolean usePhrasedClassNameInTestCaseSummary;
-
-    public ConsoleReporter( ConsoleLogger logger,
-                            boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
+    public ConsoleReporterCustom( ConsoleLogger logger,
+                                 boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
     {
-        super( logger );
-        this.usePhrasedClassNameInRunning = usePhrasedClassNameInRunning;
-        this.usePhrasedClassNameInTestCaseSummary = usePhrasedClassNameInTestCaseSummary;
+        super( logger, usePhrasedClassNameInRunning, usePhrasedClassNameInTestCaseSummary );
     }
 
     @Override
@@ -81,26 +71,4 @@ public class ConsoleReporter
         }
     }
 
-    @Override
-    public void reset()
-    {
-    }
-
-    protected void println( String message, Level level )
-    {
-        switch ( level )
-        {
-            case FAILURE:
-                getConsoleLogger()
-                        .error( message );
-                break;
-            case UNSTABLE:
-                getConsoleLogger()
-                        .warning( message );
-                break;
-            default:
-                getConsoleLogger()
-                        .info( message );
-        }
-    }
 }
