@@ -192,7 +192,7 @@ public class WrappedReportEntry
 
     public String getElapsedTimeSummary()
     {
-        String description = getName() == null ? getSourceName() : getClassMethodName(); //TODO ALTERAR AQUI
+        String description = getName() == null ? getSourceName() : getClassMethodName();
         return description + "  " + getElapsedTimeVerbose();
     }
 

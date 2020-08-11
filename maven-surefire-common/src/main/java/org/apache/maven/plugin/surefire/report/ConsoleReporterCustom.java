@@ -28,6 +28,7 @@ import java.util.List;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 
 /**
@@ -37,7 +38,7 @@ import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer
  */
 public class ConsoleReporterCustom extends ConsoleReporter
 {
-    private static final String TEST_SET_STARTING_PREFIX = "RODANDO ";
+    private static final String TEST_SET_STARTING_PREFIX = "+-- ";
 
     public ConsoleReporterCustom( ConsoleLogger logger,
                                  boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
@@ -48,8 +49,14 @@ public class ConsoleReporterCustom extends ConsoleReporter
     @Override
     public void testSetStarting( TestSetReportEntry report )
     {
+        getConsoleLogger()
+            .info( "|" );
+
         MessageBuilder builder = buffer().a( TEST_SET_STARTING_PREFIX );
-        String runningTestCase = concatenateWithTestGroup( builder, report, usePhrasedClassNameInRunning );
+
+        String runningTestCase =
+            concatenateWithTestGroup( builder, report, !isBlank( report.getReportNameWithGroup() ) );
+
         getConsoleLogger()
                 .info( runningTestCase );
     }
@@ -62,13 +69,48 @@ public class ConsoleReporterCustom extends ConsoleReporter
         boolean errors = testSetStats.getErrors() > 0;
         boolean skipped = testSetStats.getSkipped() > 0;
         boolean flakes = testSetStats.getSkipped() > 0;
+
         Level level = resolveLevel( success, failures, errors, skipped, flakes );
 
-        println( testSetStats.getColoredTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ), level );
-        for ( String testResult : testResults )
+        for ( WrappedReportEntry testResult : testSetStats.getReportEntries() )
         {
-            println( testResult, level );
+            final  MessageBuilder builder = buffer().a( "| " + TEST_SET_STARTING_PREFIX );
+            if ( testResult.isErrorOrFailure() )
+            {
+                println( builder.failure( "[XX] " + testResult.getReportName() )
+                            .a( " - " + testResult.elapsedTimeAsString() + "s" )
+                            .toString(), Level.SUCCESS );
+            }
+            else if ( testResult.isSkipped() )
+            {
+                if ( !isBlank( testResult.getReportName() ) )
+                {
+                    builder.warning( "[??] " + testResult.getReportName() );
+                }
+                else
+                {
+                    builder.warning( "[??] " + testResult.getReportSourceName() );
+                }
+
+                if ( !isBlank( testResult.getMessage() ) )
+                {
+                    builder.warning( " (" + testResult.getMessage() + ")" );
+                }
+
+                println( builder
+                            .a( " - " + testResult.elapsedTimeAsString() + "s" )
+                            .toString(), Level.SUCCESS );
+            }
+            else if ( testResult.isSucceeded() )
+            {
+                println( builder.success( "[OK] " + testResult.getReportName() )
+                                .a( " - " + testResult.elapsedTimeAsString() + "s" )
+                                .toString(), Level.SUCCESS );
+            }
         }
+
+//        println( testSetStats.getColoredTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ), level );
+
     }
 
 }
