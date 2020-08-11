@@ -78,7 +78,7 @@ final class RunListenerAdapter
     @Override
     public void executionStarted( TestIdentifier testIdentifier )
     {
-        if ( testIdentifier.isContainer()
+        if ( testIdentifier.isContainer() //TODO ENTENDER PORQUE OS TESTES @NESTED NÃO ESTÃO ENTRANDO EM EXECUTIONFINISHED
                         && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent() )
         {
             testStartTime.put( testIdentifier, System.currentTimeMillis() );
